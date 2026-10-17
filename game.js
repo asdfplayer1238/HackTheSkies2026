@@ -13,7 +13,7 @@ window.addEventListener('resize', () => {
 });
 
 // Instantiate the Player object (Just like Java: Player player = new Player(...))
-const player = new Player(canvas.width / 2 - 25, canvas.height / 2 - 25, 50, 50, 6);
+const player = new Player(canvas.width / 2 - 50, canvas.height / 2 - 50, 100, 100, 6);
 
 // Key tracking object
 const keys = {
