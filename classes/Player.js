@@ -14,7 +14,7 @@ export class Player {
     this.frameIndex = 0;
     this.animationElapsed = 0;
     this.frameDuration = 120;
-    this.directionRows = { down: 0, right: 1, left: 2, up: 3 };
+    this.directionRows = { down: 0, right: 1, left: 1, up: 3 };
   }
 
   // Equivalent to a Java update method
@@ -35,7 +35,7 @@ export class Player {
       return;
     }
 
-    const direction = Math.abs(movedX) > Math.abs(movedY)
+    const direction = movedX !== 0
       ? (movedX < 0 ? 'left' : 'right')
       : (movedY < 0 ? 'up' : 'down');
     if (direction !== this.direction) {
@@ -66,12 +66,25 @@ export class Player {
     const sourceX = this.frameIndex * this.frameWidth;
     const sourceY = row * this.frameHeight;
 
+    const drawX = this.x + (this.width - drawWidth) / 2;
+    const drawY = this.y + (this.height - drawHeight) / 2;
+    if (this.direction === 'left') {
+      ctx.save();
+      ctx.translate(drawX * 2 + drawWidth, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(
+        image,
+        sourceX, sourceY, this.frameWidth, this.frameHeight,
+        drawX, drawY, drawWidth, drawHeight
+      );
+      ctx.restore();
+      return;
+    }
+
     ctx.drawImage(
       image,
       sourceX, sourceY, this.frameWidth, this.frameHeight,
-      this.x + (this.width - drawWidth) / 2,
-      this.y + (this.height - drawHeight) / 2,
-      drawWidth, drawHeight
+      drawX, drawY, drawWidth, drawHeight
     );
   }
 }
