@@ -17,7 +17,7 @@ export class Plane {
     }
   }
 
-  draw(ctx, localPlayer, otherPlayers) {
+  draw(ctx, localPlayer, otherPlayers, turrets = [], pellets = []) {
     ctx.save(); // Save main canvas state
 
     // 1. Move origin to the center of the plane, rotate, then shift back
@@ -43,6 +43,15 @@ export class Plane {
     ctx.translate(this.x, this.y);
 
     this.tileService.draw(ctx);
+
+    turrets.forEach((turret) => turret.draw(ctx));
+
+    pellets.forEach((pellet) => {
+      ctx.beginPath();
+      ctx.arc(pellet.x, pellet.y, pellet.radius, 0, Math.PI * 2);
+      ctx.fillStyle = pellet.color;
+      ctx.fill();
+    });
 
     if (localPlayer) {
       localPlayer.draw(ctx);

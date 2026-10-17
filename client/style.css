@@ -5,15 +5,29 @@
 }
 
 body {
-  background-color: #1a1a1a;
-  overflow: hidden; /* Prevents scrollbars */
+  background: linear-gradient(180deg, #091a34 0%, #0c2d60 100%);
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+}
+
+.game-shell {
+  background: linear-gradient(180deg, #0d6efd 0%, #0a4dbd 100%);
+  border: 8px solid #8ec5ff;
+  border-radius: 22px;
+  padding: 18px;
+  box-shadow: 0 20px 45px rgba(5, 19, 41, 0.45);
 }
 
 canvas {
-  background-color: #000000;
   display: block;
+  background-color: #000000;
+  border-radius: 12px;
+  border: 3px solid #dfeeff;
+  width: min(80vw, 800px);
+  height: auto;
+  max-height: 80vh;
 }
