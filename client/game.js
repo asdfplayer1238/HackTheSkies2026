@@ -58,10 +58,24 @@ socket.on('disconnectPlayer', (id) => {
 
 // Key tracking
 const keys = { w: false, a: false, s: false, d: false };
+const keyMap = {
+  w: 'w',
+  a: 'a',
+  s: 's',
+  d: 'd',
+  arrowup: 'w',
+  arrowdown: 's',
+  arrowleft: 'a',
+  arrowright: 'd'
+};
 
 window.addEventListener('keydown', (e) => {
   const key = e.key.toLowerCase();
-  if (keys.hasOwnProperty(key)) keys[key] = true;
+  const mappedKey = keyMap[key] || key;
+  if (Object.prototype.hasOwnProperty.call(keys, mappedKey)) {
+    e.preventDefault();
+    keys[mappedKey] = true;
+  }
   if (key === 'e' && !e.repeat && localPlayer) {
     tileService.interactWithHealthPack(localPlayer);
   }
@@ -69,7 +83,10 @@ window.addEventListener('keydown', (e) => {
 
 window.addEventListener('keyup', (e) => {
   const key = e.key.toLowerCase();
-  if (keys.hasOwnProperty(key)) keys[key] = false;
+  const mappedKey = keyMap[key] || key;
+  if (Object.prototype.hasOwnProperty.call(keys, mappedKey)) {
+    keys[mappedKey] = false;
+  }
 });
 
 const startTime = Date.now();
