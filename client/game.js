@@ -1,4 +1,5 @@
 import { Player } from './classes/Player.js';
+import { TileService } from './classes/TileService.js';
 
 // Connect to your local Node.js server
 const socket = io('http://localhost:3000');
@@ -17,6 +18,9 @@ window.addEventListener('resize', () => {
 let localPlayer = null;
 const otherPlayers = {};
 
+// Initialize the Tile Service (with a 60px tile size)
+const tileService = new TileService(60);
+console.log(" Game Test Hi");
 // Listen for connection and current players list
 socket.on('currentPlayers', (serverPlayers) => {
   for (const id in serverPlayers) {
@@ -71,21 +75,27 @@ const startTime = Date.now();
 function gameLoop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Update and draw local player, then send position to server
+  // 1. Draw all map tiles first (so players walk on top of them)
+  tileService.draw(ctx);
+
+  // 2. Update and draw local player, then check interactions and send movement
   if (localPlayer) {
     localPlayer.update(keys, canvas.width, canvas.height);
     localPlayer.draw(ctx);
+
+    // Check if you walked over a turret or health pack
+    tileService.checkInteractions(localPlayer);
 
     // Emit movement to server
     socket.emit('playerMovement', { x: localPlayer.x, y: localPlayer.y });
   }
 
-  // Draw all other players
+  // 3. Draw all other players
   for (const id in otherPlayers) {
     otherPlayers[id].draw(ctx);
   }
 
-  // Draw Timer
+  // 4. Draw Timer HUD
   const elapsedTime = ((Date.now() - startTime) / 1000).toFixed(1);
   ctx.fillStyle = '#ffffff';
   ctx.font = '24px monospace';
