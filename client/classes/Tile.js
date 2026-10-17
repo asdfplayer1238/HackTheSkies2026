@@ -1,7 +1,13 @@
 export class Tile {
   constructor(x, y, size, type, interactable = false, testvariable = 0) {
-    this.x = x;
-    this.y = y;
+    // Multiply grid position by tile size to get actual pixel coordinates
+    this.x = x * size;
+    this.y = y * size;
+    
+    // Store original grid coordinates just in case you need them later
+    this.gridX = x;
+    this.gridY = y;
+
     this.size = size;
     this.type = type;                 // e.g., 'turret' or 'healthPack'
     this.interactable = interactable; // boolean flag
@@ -16,10 +22,9 @@ export class Tile {
     };
   }
 
-  // Equivalent to a Java method for handling interaction
+  // Handle interaction
   onInteract(player) {
     console.log(`Interacted with ${this.type}! Test Variable: ${this.testvariable}`);
-    // You can add game logic here later (e.g., player.health += this.testvariable)
   }
 
   // Draw the tile on the canvas

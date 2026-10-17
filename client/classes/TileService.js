@@ -1,17 +1,19 @@
 import { Tile } from './Tile.js';
 
 export class TileService {
-  constructor(tileSize = 60) {
-    this.tileSize = tileSize;
+  // Static variable belonging to the class itself
+  static tileSize = 60;
+
+  constructor() {
     this.tiles = [];
 
     this.turretTiles = [
-      { x: 200, y: 200, testvariable: 15, interactable: true },
-      { x: 500, y: 400, testvariable: 30, interactable: true }
+      { x: 11, y: 4, testvariable: 15, interactable: true },
+      { x: 4, y: 5, testvariable: 30, interactable: true }
     ];
 
     this.healthPackTiles = [
-      { x: 700, y: 150, testvariable: 50, interactable: true }
+      { x: 12, y: 3, testvariable: 50, interactable: true }
     ];
 
     this.initTiles();
@@ -21,11 +23,12 @@ export class TileService {
     console.log(" TileService: Initializing tiles...");
 
     this.turretTiles.forEach(data => {
-      this.tiles.push(new Tile(data.x, data.y, this.tileSize, 'turret', data.interactable, data.testvariable));
+      // Use TileService.tileSize instead of this.tileSize
+      this.tiles.push(new Tile(data.x, data.y, TileService.tileSize, 'turret', data.interactable, data.testvariable));
     });
 
     this.healthPackTiles.forEach(data => {
-      this.tiles.push(new Tile(data.x, data.y, this.tileSize, 'healthPack', data.interactable, data.testvariable));
+      this.tiles.push(new Tile(data.x, data.y, TileService.tileSize, 'healthPack', data.interactable, data.testvariable));
     });
 
     console.log(` Successfully created ${this.tiles.length} total tiles.`);
