@@ -17,10 +17,10 @@ export class Player {
 
   // Equivalent to a Java update method
   update(keys, canvasWidth, canvasHeight) {
-    if (keys.w && this.y > 0) this.y -= this.speed;
-    if (keys.s && this.y + this.height < canvasHeight) this.y += this.speed;
-    if (keys.a && this.x > 0) this.x -= this.speed;
-    if (keys.d && this.x + this.width < canvasWidth) this.x += this.speed;
+    if ((keys.w || keys.arrowup) && this.y > 0) this.y -= this.speed;
+    if ((keys.s || keys.arrowdown) && this.y + this.height < canvasHeight) this.y += this.speed;
+    if ((keys.a || keys.arrowleft) && this.x > 0) this.x -= this.speed;
+    if ((keys.d || keys.arrowright) && this.x + this.width < canvasWidth) this.x += this.speed;
   }
 
   // Equivalent to a Java render/draw method

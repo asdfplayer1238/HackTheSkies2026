@@ -20,17 +20,23 @@ const keys = {
   w: false,
   a: false,
   s: false,
-  d: false
+  d: false,
+  arrowup: false,
+  arrowleft: false,
+  arrowdown: false,
+  arrowright: false
 };
 
 // Keyboard Listeners
 window.addEventListener('keydown', (e) => {
   const key = e.key.toLowerCase();
+  if (key.startsWith('arrow')) e.preventDefault();
   if (keys.hasOwnProperty(key)) keys[key] = true;
 });
 
 window.addEventListener('keyup', (e) => {
   const key = e.key.toLowerCase();
+  if (key.startsWith('arrow')) e.preventDefault();
   if (keys.hasOwnProperty(key)) keys[key] = false;
 });
 
