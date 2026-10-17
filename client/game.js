@@ -63,6 +63,7 @@ window.addEventListener('keydown', (e) => {
   const key = e.key.toLowerCase();
   if (keys.hasOwnProperty(key)) keys[key] = true;
   if (key === 'e' && !e.repeat && localPlayer) {
+    localPlayer.onInteract();
     tileService.interactWithHealthPack(localPlayer);
   }
 });

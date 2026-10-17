@@ -9,12 +9,12 @@ export class Player {
     this.height = 64;
 
     this.currentState = 'idle';
-    
-    // Grid layout: 4 columns, 5 rows per sprite sheet
-    this.maxColumns = 4;
+    this.isInteracting = false;
+
+    // Grid dimensions
     this.maxRows = 5;
-    this.frameX = 0; // Column index (0 to 3)
-    this.frameY = 0; // Row index (0 to 4)
+    this.frameX = 0; // Column index
+    this.frameY = 0; // Row index
 
     this.gameFrame = 0;
     this.staggerFrames = 8; // Animation speed control
@@ -28,7 +28,7 @@ export class Player {
       this.images[name] = new Image();
       const fileName = name === 'idle' ? 'plrIdle' : `plr${name.charAt(0).toUpperCase() + name.slice(1)}`;
       this.images[name].src = `./assets/images/${fileName}.png`;
-      
+
       this.imagesLoaded[name] = false;
       this.images[name].onload = () => {
         this.imagesLoaded[name] = true;
@@ -36,13 +36,44 @@ export class Player {
     });
   }
 
+  // Helper method to get the correct column count for the active sheet
+  getMaxColumns() {
+    return this.currentState === 'interact' ? 7 : 4;
+  }
+
+  // Triggered when interacting
+  onInteract() {
+    if (this.isInteracting) return; // Don't interrupt an existing interaction
+
+    this.isInteracting = true;
+    this.currentState = 'interact';
+    this.frameX = 0;
+    this.gameFrame = 0;
+  }
+
   update(keys, canvasWidth, canvasHeight) {
+    // 1. Handle Interaction Animation Locks
+    if (this.isInteracting) {
+      this.gameFrame++;
+      if (this.gameFrame % this.staggerFrames === 0) {
+        this.frameX++;
+
+        // Interact sheet has 7 columns (index 0 to 6)
+        if (this.frameX >= 7) {
+          this.frameX = 0; // Reset frame BEFORE switching state
+          this.isInteracting = false;
+          this.currentState = 'idle';
+        }
+      }
+      return; // Lock movement while interacting
+    }
+
+    // 2. Regular Movement Logic
     let moving = false;
 
-    // Map movement directions to rows (0 to 4)
     if (keys.w && this.y > 0) {
       this.y -= this.speed;
-      this.frameY = 3; // Row for Up (adjust if your layout differs)
+      this.frameY = 3; // Row for Up
       moving = true;
     }
     if (keys.s && this.y + this.height < canvasHeight) {
@@ -63,26 +94,29 @@ export class Player {
 
     this.currentState = moving ? 'walk' : 'idle';
 
-    // Cycle through columns (0 to 3) when moving
+    // 3. Frame Cycling
+    const maxCols = this.getMaxColumns();
     if (moving) {
       this.gameFrame++;
       if (this.gameFrame % this.staggerFrames === 0) {
-        this.frameX = (this.frameX + 1) % this.maxColumns;
+        this.frameX = (this.frameX + 1) % maxCols;
       }
     } else {
-      this.frameX = 0; // Reset to default frame when idle
+      // Always keep frameX safely within bounds when switching/idle
+      this.frameX = this.frameX % maxCols;
     }
   }
 
   draw(ctx) {
     const img = this.images[this.currentState];
+    const maxCols = this.getMaxColumns();
 
     if (this.imagesLoaded[this.currentState]) {
-      // Dynamically calculate cell size based on the 4x5 sheet layout
-      const cellWidth = img.width / this.maxColumns;
+      // Calculate cell size dynamically based on columns (7 for interact, 4 for others) and 5 rows
+      const cellWidth = img.width / maxCols;
       const cellHeight = img.height / this.maxRows;
 
-      // Draw the exact grid cell slice from the 4x5 sheet
+      // Draw exact grid cell slice
       ctx.drawImage(
         img,
         this.frameX * cellWidth,   // Source X (Column)
