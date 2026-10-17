@@ -12,6 +12,7 @@ export class Tile {
     this.type = type;                 // e.g., 'turret' or 'healthPack'
     this.interactable = interactable; // boolean flag
     this.testvariable = testvariable; // custom property per tile
+    this.isTouching = false;
 
     // Load image asset dynamically based on tile type
     this.image = new Image();
@@ -22,9 +23,16 @@ export class Tile {
     };
   }
 
-  // Handle interaction
-  onInteract(player) {
-    console.log(`Interacted with ${this.type}! Test Variable: ${this.testvariable}`);
+  onTouch() {
+    console.log(`Touched ${this.displayName()}!`);
+  }
+
+  onInteract() {
+    console.log(`Interacted with ${this.displayName()}!`);
+  }
+
+  displayName() {
+    return this.type === 'healthPack' ? 'health pack' : this.type;
   }
 
   // Draw the tile on the canvas

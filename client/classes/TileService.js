@@ -40,18 +40,33 @@ export class TileService {
 
   checkInteractions(player) {
     this.tiles.forEach(tile => {
-      if (tile.interactable) {
-        const isColliding = (
-          player.x < tile.x + tile.size &&
-          player.x + player.width > tile.x &&
-          player.y < tile.y + tile.size &&
-          player.y + player.height > tile.y
-        );
+      const isColliding = tile.interactable && this.isPlayerTouchingTile(player, tile);
 
-        if (isColliding) {
-          tile.onInteract(player);
-        }
+      if (isColliding && !tile.isTouching) {
+        tile.onTouch();
       }
+      tile.isTouching = isColliding;
     });
+  }
+
+  interactWithHealthPack(player) {
+    const healthPack = this.tiles.find(tile =>
+      tile.interactable &&
+      tile.type === 'healthPack' &&
+      this.isPlayerTouchingTile(player, tile)
+    );
+
+    if (healthPack) {
+      healthPack.onInteract();
+    }
+  }
+
+  isPlayerTouchingTile(player, tile) {
+    return (
+      player.x < tile.x + tile.size &&
+      player.x + player.width > tile.x &&
+      player.y < tile.y + tile.size &&
+      player.y + player.height > tile.y
+    );
   }
 }
