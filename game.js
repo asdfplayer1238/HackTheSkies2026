@@ -58,11 +58,11 @@ class Player {
 
 // Create an instance of our Player class
 const player = new Player(
-  canvas.width / 2 - 25, 
-  canvas.height / 2 - 25, 
-  50, 
-  50, 
-  6, 
+  canvas.width / 2 - 60,
+  canvas.height / 2 - 60,
+  120,
+  120,
+  6,
   'assets/images/test.jpg'
 );
 
