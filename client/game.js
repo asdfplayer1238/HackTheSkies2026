@@ -1,7 +1,7 @@
 import { Player } from './classes/Player.js';
 import { TileService } from './classes/TileService.js';
+import { Plane } from './classes/Plane.js';
 
-// Connect to your local Node.js server
 const socket = io('http://localhost:3000');
 
 const canvas = document.getElementById('gameCanvas');
@@ -18,76 +18,57 @@ window.addEventListener('resize', () => {
 let localPlayer = null;
 const otherPlayers = {};
 
-// Initialize the Tile Service (with a 60px tile size)
+// Initialize Tile Service
 const tileService = new TileService(60);
-console.log(" Game Test Hi");
-// Listen for connection and current players list
+
+// Initialize the Plane frame centered on the screen (Width: 900, Height: 600)
+const planeWidth = 900;
+const planeHeight = 600;
+const planeX = (canvas.width - planeWidth) / 2;
+const planeY = (canvas.height - planeHeight) / 2;
+const plane = new Plane(planeX, planeY, planeWidth, planeHeight, tileService);
+
 socket.on('currentPlayers', (serverPlayers) => {
   for (const id in serverPlayers) {
     const pData = serverPlayers[id];
+    // Spawn players inside the plane bounds
+    const spawnX = planeX + 100;
+    const spawnY = planeY + 100;
+
     if (id === socket.id) {
-      // This is you
-      localPlayer = new Player(pData.x, pData.y, 5); // x, y, speed
-      localPlayer.color = pData.color;
+      localPlayer = new Player(spawnX, spawnY, 5);
     } else {
-      // This is another player
-      otherPlayers[id] = new Player(pData.x, pData.y, 5); // x, y, speed
-      otherPlayers[id].color = pData.color;
+      otherPlayers[id] = new Player(spawnX, spawnY, 5);
     }
   }
 });
 
-// When a new player joins later
 socket.on('newPlayer', (data) => {
-  otherPlayers[data.id] = new Player(data.player.x, data.player.y, data.player.width, data.player.height, 6);
-  otherPlayers[data.id].color = data.player.color;
+  otherPlayers[data.id] = new Player(planeX + 100, planeY + 100, 5);
 });
 
-// When another player moves
 socket.on('playerMoved', (data) => {
   if (otherPlayers[data.id]) {
+    // Note: server coordinates should map to local plane coordinates
     otherPlayers[data.id].x = data.x;
     otherPlayers[data.id].y = data.y;
   }
 });
 
-// When a player leaves
 socket.on('disconnectPlayer', (id) => {
   delete otherPlayers[id];
 });
 
-// Key tracking
 const keys = { w: false, a: false, s: false, d: false };
-const keyMap = {
-  w: 'w',
-  a: 'a',
-  s: 's',
-  d: 'd',
-  arrowup: 'w',
-  arrowdown: 's',
-  arrowleft: 'a',
-  arrowright: 'd'
-};
 
 window.addEventListener('keydown', (e) => {
   const key = e.key.toLowerCase();
-  const mappedKey = keyMap[key] || key;
-  if (Object.prototype.hasOwnProperty.call(keys, mappedKey)) {
-    e.preventDefault();
-    keys[mappedKey] = true;
-  }
-  if (key === 'e' && !e.repeat && localPlayer) {
-    localPlayer.onInteract();
-    tileService.interactWithHealthPack(localPlayer);
-  }
+  if (keys.hasOwnProperty(key)) keys[key] = true;
 });
 
 window.addEventListener('keyup', (e) => {
   const key = e.key.toLowerCase();
-  const mappedKey = keyMap[key] || key;
-  if (Object.prototype.hasOwnProperty.call(keys, mappedKey)) {
-    keys[mappedKey] = false;
-  }
+  if (keys.hasOwnProperty(key)) keys[key] = false;
 });
 
 const startTime = Date.now();
@@ -96,27 +77,19 @@ const startTime = Date.now();
 function gameLoop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // 1. Draw all map tiles first (so players walk on top of them)
-  tileService.draw(ctx);
-
-  // 2. Update and draw local player, then check interactions and send movement
+  // 1. Update local player within the plane boundaries
   if (localPlayer) {
-    localPlayer.update(keys, canvas.width, canvas.height);
-    localPlayer.draw(ctx);
-
-    // Check if you walked over a turret or health pack
+    plane.update(keys, localPlayer);
     tileService.checkInteractions(localPlayer);
 
-    // Emit movement to server
+    // Send local position relative to the plane to server
     socket.emit('playerMovement', { x: localPlayer.x, y: localPlayer.y });
   }
 
-  // 3. Draw all other players
-  for (const id in otherPlayers) {
-    otherPlayers[id].draw(ctx);
-  }
+  // 2. Draw the plane (which automatically clips and renders all its child tiles and players inside it)
+  plane.draw(ctx, localPlayer, otherPlayers);
 
-  // 4. Draw Timer HUD
+  // 3. Draw UI/Timer outside the plane on the main canvas HUD
   const elapsedTime = ((Date.now() - startTime) / 1000).toFixed(1);
   ctx.fillStyle = '#ffffff';
   ctx.font = '24px monospace';

@@ -13,9 +13,11 @@ const io = new Server(server, {
 
 // Keep track of all connected players
 const players = {};
+const containerFramePosition = { x: 0, y: 0 };
 
 io.on('connection', (socket) => {
   console.log(`Player connected: ${socket.id}`);
+  socket.emit('containerFramePosition', containerFramePosition);
 
   // Assign a random starting position and random color
   players[socket.id] = {
@@ -47,6 +49,17 @@ io.on('connection', (socket) => {
         y: players[socket.id].y
       });
     }
+  });
+
+  socket.on('setContainerFramePosition', (position) => {
+    if (!position || !Number.isFinite(position.x) || !Number.isFinite(position.y)) {
+      console.warn(`Ignored invalid container frame position from ${socket.id}`);
+      return;
+    }
+
+    containerFramePosition.x = position.x;
+    containerFramePosition.y = position.y;
+    io.emit('containerFramePosition', containerFramePosition);
   });
 
   // Handle player disconnect
