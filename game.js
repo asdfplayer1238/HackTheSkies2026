@@ -44,9 +44,13 @@ window.addEventListener('keyup', (e) => {
 const startTime = Date.now();
 
 // Main Game Loop
-function gameLoop() {
+let previousFrameTimestamp;
+function gameLoop(timestamp = performance.now()) {
+  const deltaTime = previousFrameTimestamp === undefined ? 0 : timestamp - previousFrameTimestamp;
+  previousFrameTimestamp = timestamp;
+
   // 1. Update Player position based on inputs and screen bounds
-  player.update(keys, canvas.width, canvas.height);
+  player.update(keys, canvas.width, canvas.height, deltaTime);
 
   // 2. Clear canvas frame
   ctx.clearRect(0, 0, canvas.width, canvas.height);

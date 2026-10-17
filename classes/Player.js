@@ -6,30 +6,72 @@ export class Player {
     this.height = height;
     this.speed = speed;
 
-    // Load image asset
-    this.image = new Image();
-    this.image.src = 'assets/images/test.jpg'; // Ensure this path is correct
-    this.imageLoaded = false;
-    this.image.onload = () => {
-      this.imageLoaded = true;
-    };
+    this.direction = 'down';
+    this.spriteSheet = new Image();
+    this.spriteSheet.src = 'assets/images/playerSprites.png';
+    this.frameWidth = 128;
+    this.frameHeight = 192;
+    this.frameIndex = 0;
+    this.animationElapsed = 0;
+    this.frameDuration = 120;
+    this.directionRows = { down: 0, right: 1, left: 2, up: 3 };
   }
 
   // Equivalent to a Java update method
-  update(keys, canvasWidth, canvasHeight) {
+  update(keys, canvasWidth, canvasHeight, deltaTime) {
+    const previousX = this.x;
+    const previousY = this.y;
+
     if ((keys.w || keys.arrowup) && this.y > 0) this.y -= this.speed;
     if ((keys.s || keys.arrowdown) && this.y + this.height < canvasHeight) this.y += this.speed;
     if ((keys.a || keys.arrowleft) && this.x > 0) this.x -= this.speed;
     if ((keys.d || keys.arrowright) && this.x + this.width < canvasWidth) this.x += this.speed;
+
+    const movedX = this.x - previousX;
+    const movedY = this.y - previousY;
+    if (movedX === 0 && movedY === 0) {
+      this.frameIndex = 0;
+      this.animationElapsed = 0;
+      return;
+    }
+
+    const direction = Math.abs(movedX) > Math.abs(movedY)
+      ? (movedX < 0 ? 'left' : 'right')
+      : (movedY < 0 ? 'up' : 'down');
+    if (direction !== this.direction) {
+      this.direction = direction;
+      this.frameIndex = 0;
+      this.animationElapsed = 0;
+    }
+
+    this.animationElapsed += deltaTime;
+    const framesElapsed = Math.floor(this.animationElapsed / this.frameDuration);
+    this.frameIndex = (this.frameIndex + framesElapsed) % 6;
+    this.animationElapsed %= this.frameDuration;
   }
 
   // Equivalent to a Java render/draw method
   draw(ctx) {
-    if (this.imageLoaded) {
-      ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
-    } else {
+    const image = this.spriteSheet;
+    if (!image.complete || image.naturalWidth === 0) {
       ctx.fillStyle = '#00ffcc';
       ctx.fillRect(this.x, this.y, this.width, this.height);
+      return;
     }
+
+    const row = this.directionRows[this.direction];
+    const scale = Math.min(this.width / this.frameWidth, this.height / this.frameHeight);
+    const drawWidth = this.frameWidth * scale;
+    const drawHeight = this.frameHeight * scale;
+    const sourceX = this.frameIndex * this.frameWidth;
+    const sourceY = row * this.frameHeight;
+
+    ctx.drawImage(
+      image,
+      sourceX, sourceY, this.frameWidth, this.frameHeight,
+      this.x + (this.width - drawWidth) / 2,
+      this.y + (this.height - drawHeight) / 2,
+      drawWidth, drawHeight
+    );
   }
 }
