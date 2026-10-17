@@ -27,11 +27,11 @@ socket.on('currentPlayers', (serverPlayers) => {
     const pData = serverPlayers[id];
     if (id === socket.id) {
       // This is you
-      localPlayer = new Player(pData.x, pData.y, pData.width, pData.height, 6);
+      localPlayer = new Player(pData.x, pData.y, 5); // x, y, speed
       localPlayer.color = pData.color;
     } else {
       // This is another player
-      otherPlayers[id] = new Player(pData.x, pData.y, pData.width, pData.height, 6);
+      otherPlayers[id] = new Player(pData.x, pData.y, 5); // x, y, speed
       otherPlayers[id].color = pData.color;
     }
   }
